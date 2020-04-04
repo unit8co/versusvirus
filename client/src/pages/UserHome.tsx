@@ -1,6 +1,5 @@
 import React, {useState} from "react";
 import { getUserType, getCustomer } from "../api/api";
-import { ClientHomePageComponent } from "../views/client-views/ClientHomePage";
 import ClientHome from "./ClientHome";
 import ProviderHome from "./ProviderHome";
 

@@ -1,7 +1,5 @@
 import { Button, Card, CardContent, FormControl, Input, Typography, TextField } from "@material-ui/core";
 import * as React from "react";
-import { connect } from "react-redux";
-import { Dispatch } from "redux";
 import { IProposal } from "../../common/types";
 import * as ActionsUser from "../../common/actions";
 import { UserActions } from "../../common/types";
@@ -11,17 +9,8 @@ export interface IProposalDetailsProps {
     closePopUp: () => void;
 }
 
-const mapDispatcherToProps = (dispatch: Dispatch<UserActions>) => {
-    return {
-        disableProposalDetailPopUpDisplay: () => dispatch(ActionsUser.closeProposalDetails()),
-    };
-};
-
-type ReduxType = ReturnType<typeof mapDispatcherToProps>;
-
-class ProposalDetailsComponent extends React.PureComponent<IProposalDetailsProps & ReduxType> {
-    public render() {
-        if (this.props.currentProposal) {
+const ProposalDetailsComponent = (props: IProposalDetailsProps) => {
+        if (props.currentProposal != null) {
             return (
                 <div className="proposal-detail-pop-up">
                         <div className="proposal-detail-info">
@@ -31,25 +20,25 @@ class ProposalDetailsComponent extends React.PureComponent<IProposalDetailsProps
                                         Provider
                                     </Typography>
                                     <Typography className="Value" variant="h5" component="h2">
-                                        {this.props.currentProposal.username}
+                                        {props.currentProposal.username}
                                     </Typography>
                                     <Typography className="label" color="textSecondary" gutterBottom>
                                         Material
                                     </Typography>
                                     <Typography className="Value" variant="h5" component="h2">
-                                        {this.props.currentProposal.material}
+                                        {props.currentProposal.material}
                                     </Typography>
                                     <Typography className="label" color="textSecondary" gutterBottom>
                                         Proposal quantity
                                     </Typography>
                                     <Typography className="Value" variant="h5" component="h2">
-                                        {this.props.currentProposal.proposalQuantity}
+                                        {props.currentProposal.proposalQuantity}
                                     </Typography>
                                     <Typography className="label" color="textSecondary" gutterBottom>
                                         Reliability Score
                                     </Typography>
                                     <Typography className="Value" variant="h5" component="h2">
-                                        {this.props.currentProposal.reliabilityScore}
+                                        {props.currentProposal.reliabilityScore}
                                     </Typography>
                                 </CardContent>
                             </Card>
@@ -60,23 +49,20 @@ class ProposalDetailsComponent extends React.PureComponent<IProposalDetailsProps
                                 <TextField 
                                     id="filled-number"
                                     label="Wanted quantity"
-                                    InputProps={{ inputProps: { min: 0, max: this.props.currentProposal.proposalQuantity } }}
+                                    InputProps={{ inputProps: { min: 0, max: props.currentProposal.proposalQuantity } }}
                                     type="number"
                                 />
                                 <Input />
                             </FormControl>
                         </div>
                     <div className="close-button">
-                        <Button color="secondary" variant="contained" onClick={this.closePopUp}>Close</Button>
+                        <Button color="secondary" variant="contained" onClick={props.closePopUp}>Close</Button>
                     </div>
                 </div>
             )
-        }
-    }
-
-    private closePopUp = () => () => {
-        this.props.disableProposalDetailPopUpDisplay();
+    } else {
+        return null;
     }
 }
 
-export const ProposalDetails = connect(null, mapDispatcherToProps)(ProposalDetailsComponent);
+export default ProposalDetailsComponent;
