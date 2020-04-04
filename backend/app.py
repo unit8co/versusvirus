@@ -18,6 +18,7 @@ CORS(app)
 
 customer_api = api.namespace('customers', description='Customer APIs')
 provider_api = api.namespace('providers', description='Provider APIs')
+user_type_api = api.namespace('users-type', description='User Type APIs')
 request_api = api.namespace('requests', description='Request APIs')
 
 # @app.route('/time', methods=['GET']) 
@@ -129,6 +130,16 @@ class ProviderSupplies(Resource):
     def put(self, provider_id):
         '''Create supply from provider'''
         return 'created supply from provider'
+
+@user_type_api.route('/<int:user_id>')
+@user_type_api.response(404, 'User not found')
+@user_type_api.param('user_id', 'The user identifier')
+class UserType(Resource):
+    '''Show a request details'''
+    @user_type_api.doc('Get user type by id') 
+    def get(self, user_id):
+        '''Get user type '''
+        return 'get user type'
 
 
 @request_api.route('/<int:request_id>')
