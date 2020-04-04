@@ -6,16 +6,15 @@ export interface IClientRequestDetailsProps {
     selectedRequest: IClientRequest | undefined;
 }
 
-export class ClientRequestDetails extends React.PureComponent<IClientRequestDetailsProps> {
-    public render() {
-        return (
-            <div className="current-request-details">
-                {this.props.selectedRequest === undefined ? (
-                    <p>No selected requests!</p>
-                ) : (
+const ClientRequestDetails = (props: IClientRequestDetailsProps) => {
+    return (
+        <div className="current-request-details">
+            {props.selectedRequest === undefined ? (
+                <p>No selected requests!</p>
+            ) : (
                     <div>
                         <div className="current-request-title">
-                            <p>Request {this.props.selectedRequest.requestId}: Details</p>
+                            <p>Request {props.selectedRequest.requestId}: Details</p>
                         </div>
                         <Table>
                             <TableHead>
@@ -34,24 +33,25 @@ export class ClientRequestDetails extends React.PureComponent<IClientRequestDeta
                             <TableBody>
                                 <TableRow>
                                     <TableCell>
-                                        {this.props.selectedRequest.requestedProduct}
+                                        {props.selectedRequest.requestedProduct}
                                     </TableCell>
                                 </TableRow>
                                 <TableRow>
                                     <TableCell>
-                                        {this.props.selectedRequest.requestedAmount}
+                                        {props.selectedRequest.requestedAmount}
                                     </TableCell>
                                 </TableRow>
                                 <TableRow>
                                     <TableCell>
-                                        {this.props.selectedRequest.currentlyProvided}
+                                        {props.selectedRequest.currentlyProvided}
                                     </TableCell>
                                 </TableRow>
                             </TableBody>
                         </Table>
                     </div>
                 )}
-            </div>
-        );
-    }
+        </div>
+    );
 }
+
+export default ClientRequestDetails;

@@ -15,10 +15,14 @@ import SignIn from "./pages/SignIn";
 import Protected from "./pages/Protected";
 import ProviderRegisterForm from "./views/forms/ProviderRegisterForm";
 import { ProtectedPage } from "./pages/ProtectedPage";
+import ConsumerRegisterForm from "./views/forms/ConsumerRegisterForm";
+import UserHome from "./pages/UserHome";
 
 
 function App() {
   const ProtectedProviderRegisterForm = ProtectedPage(ProviderRegisterForm);
+  const ProtectedUserHome = ProtectedPage(UserHome);
+  const ProtectedConsumerRegisterForm = ProtectedPage(ConsumerRegisterForm);
   return (
     <FirebaseAuthProvider firebase={firebase} {...firebaseConfig}>
     <Router>
@@ -38,8 +42,11 @@ function App() {
             <Route path="/register">
               <SignIn />
             </Route>
+            <Route path="/home">
+              <ProtectedUserHome />
+            </Route>
             <Route path="/register-customer">
-              <div>register customer</div>
+              <ProtectedConsumerRegisterForm />
             </Route>
             <Route path="/register-provider">
               <ProtectedProviderRegisterForm />

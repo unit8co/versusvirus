@@ -1,13 +1,23 @@
 import { get, post } from "./utils";
 
+const API_URL = "/api/v1";
+
 export const createProvider = (provider: any) => {
-    return post("/api/providers", provider);    
+    return post(`${API_URL}/providers`, provider);    
+}
+
+export const getCustomer = (id: string) => {
+    return get(`${API_URL}/customers/{id}`);    
 }
 
 export const createCustomer = (customer: any) => {
-    return post("/api/customers", customer);    
+    return post(`${API_URL}/customers`, customer);    
 }
 
 export const getUserType = (userId: any) => {
-    return get(`/api/users-type/${userId}`);
+    return get(`${API_URL}/users-type/${userId}`);
+}
+
+export const getCustomerRequests = (userId: string) => {
+    return get(`${API_URL}/customers/${userId}/requests`);
 }
