@@ -1,0 +1,15 @@
+# doc: https://cloud.google.com/appengine/docs/flexible/custom-runtimes/configuring-your-app-with-app-yaml
+# pricing: https://cloud.google.com/appengine/pricing#flexible-environment-pricing
+
+service: versusvirus
+runtime: custom
+env: flex
+
+automatic_scaling:
+  min_num_instances: 1
+  max_num_instances: 1
+
+resources:
+  cpu: 2
+  memory_gb: 4
+  disk_size_gb: 16

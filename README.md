@@ -1,3 +1,13 @@
 # VersusVirus: An exchange platform between providers and consumers of medical equipments
 
-# Running docker: docker-compose up --build
+deploy locally
+
+``` sh
+pushd client
+yarn build
+yarn install
+popd
+
+docker build -t versusvirus .
+docker run -i -t -p 8080:8080 versusvirus
+```
