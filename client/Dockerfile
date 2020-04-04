@@ -10,9 +10,12 @@ ENV PATH /usr/src/app/node_modules/.bin:$PATH
 
 # install and cache app dependencies
 COPY package.json /usr/src/app/package.json
+COPY yarn.lock /usr/src/app/yarn.lock
+COPY tsconfig.json /usr/src/app/tsconfig.json
 RUN yarn install --silent
 COPY src /usr/src/app/src
 COPY public /usr/src/app/public
 
 # start app
-CMD ["yarn", "start"]
+ENTRYPOINT ["yarn"]
+CMD ["start"]
