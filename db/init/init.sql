@@ -1,3 +1,3 @@
-CREATE TABLE players ( firstname VARCHAR(100) NOT NULL, lastname VARCHAR(100) NOT NULL );
+CREATE TABLE users ( firstname VARCHAR(100) NOT NULL, lastname VARCHAR(100) NOT NULL );
 
-INSERT INTO players VALUES ('james', 'lebron');
+INSERT INTO users VALUES ('john', 'kowalski');
