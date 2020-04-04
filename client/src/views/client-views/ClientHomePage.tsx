@@ -1,8 +1,11 @@
 import * as React from "react";
+import { ClientRequestCreation } from "./ClientRequestCreation";
+import { ProposalDetails } from "./ProposalDetails";
 import { ClientRequestDetails } from "./tables/ClientRequestDetails";
 import { ProposalsTable } from "./tables/ProposalsTable";
 import { RequestsPreviewTable } from "./tables/RequestPreviewTable";
 import { IClientRequest, IProposal } from "../../common/types";
+import { Button } from "@material-ui/core";
 
 export interface IClientHomePageProps {
     clientRequests: IClientRequest[];
@@ -10,11 +13,17 @@ export interface IClientHomePageProps {
 }
 
 export interface IClientHomePageState {
-    selectedReq: IClientRequest | undefined;
+    displayRequestCreation: boolean;
+    displayProposalDetails: boolean;
+    selectedProposal: IProposal | undefined;
+    selectedRequest: IClientRequest | undefined;
 }
 export class ClientHomePageComponent extends React.PureComponent<IClientHomePageProps> {
 
     public state = {
+        displayRequestCreation: false,
+        displayProposalDetails: false,
+        selectedProposal: undefined,
         selectedRequest: undefined,
     }
 
@@ -32,10 +41,27 @@ export class ClientHomePageComponent extends React.PureComponent<IClientHomePage
                             <p>No requests issued yet!</p>
                         )}
                     </div>
+                    <div className="new-request-button">
+                        <Button
+                            variant="contained" 
+                            color="primary"
+                            onClick={this.displayRequestCreation()}
+                        >
+                            NEW REQUEST
+                        </Button>
+                    </div>
                 </div>
                 <div className="main-tab">
                     <ClientRequestDetails selectedRequest={this.state.selectedRequest}/>
-                    <ProposalsTable proposals={this.props.providerProposals} />
+                    <ProposalsTable proposals={this.props.providerProposals} selectProposal={this.updateCurrentProposal} />
+                </div>
+                <div className="pop-up-container">
+                    {this.state.displayRequestCreation && (
+                        <ClientRequestCreation closePopUp={this.closeRequestCreation}/>
+                    )}
+                    {this.state.displayProposalDetails && (
+                        <ProposalDetails currentProposal={this.state.selectedProposal} closePopUp={this.closeProposalDetails}/>
+                    )}
                 </div>
             </div>
             
@@ -44,5 +70,21 @@ export class ClientHomePageComponent extends React.PureComponent<IClientHomePage
 
     private updateCurrentRequest(newCurrentRequest: IClientRequest) {
         this.setState({ selecteRequest: newCurrentRequest});
-    }
+    };
+
+    private updateCurrentProposal(newProposal: IProposal) {
+        this.setState({ displayProposalDetails: true, selectedProposal: newProposal});
+    };
+
+    private displayRequestCreation = () => () => {
+        this.setState({ displayRequestCreation: true })
+    };
+
+    private closeRequestCreation = () => () =>  {
+        this.setState({ displayRequestCreation: false })
+    };
+
+    private closeProposalDetails = () => () =>  {
+        this.setState({ displayProposalDetails: false, selectedProposal: undefined })
+    };
 }
