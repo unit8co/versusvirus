@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import Select from 'react-select';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormHelperText from '@material-ui/core/FormHelperText';
 import Checkbox from '@material-ui/core/Checkbox';
 import TextField from '@material-ui/core/TextField';
 import { Button } from "@material-ui/core";
+import { createProvider } from "../../api/api";
+import { useHistory } from "react-router";
 
 export interface IState {
     printer: string | null;
@@ -20,20 +21,24 @@ const ProviderRegisterForm = ({ user }: { user: any }) => {
         { value: 'professional', label: 'Professional' },
     ];
 
+    const history = useHistory();
+
+    const [isLoading, setIsLoading] = useState(false);
     const [printer, setPrinter] = useState(undefined as unknown as string);
     const [experience, setExperience] = useState(options[0] as unknown as { value: string, label: string } | undefined);
     const [hasPetG, setHasPetG] = useState(false);
     const [hasAbs, setHasAbs] = useState(false);
     const [hasPla, setHasPla] = useState(false);
     const registerAsProvider = () => {
-        console.log({
+        setIsLoading(true);
+        createProvider({
             user: user.uid,
             printer,
             experience: experience!.value,
             hasPetG,
             hasAbs,
             hasPla
-        })
+        }).then(() => history.push("/home"));
     }
     return (
         <div className="provider-register-form">

@@ -12,6 +12,7 @@ export interface IClientHomePageProps {
 export interface IClientHomePageState {
     selectedReq: IClientRequest | undefined;
 }
+
 export class ClientHomePageComponent extends React.PureComponent<IClientHomePageProps> {
 
     public state = {
