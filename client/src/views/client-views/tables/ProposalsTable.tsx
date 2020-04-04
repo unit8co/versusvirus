@@ -1,15 +1,30 @@
 import { Table, TableBody, TableCell, TableHead, TableRow } from "@material-ui/core";
-import { IClientRequest, IProposal } from "../../../common/types";
 import * as React from "react";
+import { connect } from "react-redux";
+import { Dispatch } from "redux";
+import { IClientRequest, IProposal } from "../../../common/types";
+import * as ActionsUser from "../../../common/actions";
+import { UserActions } from "../../../common/types";
 
 export interface IProposalsTableProps {
     proposals: IProposal[];
+    selectProposal: (_: IProposal) => void;
 }
+
 export interface IProposalsTableState {
     currentClientRequest: IClientRequest;
 }
 
-export class ProposalsTable extends React.PureComponent<IProposalsTableProps, IProposalsTableState > {
+const mapDispatcherToProps = (dispatch: Dispatch<UserActions>) => {
+    return {
+        setCurrentRequest: (newProposal: IProposal) => dispatch(ActionsUser.changeSelectedProposal(newProposal)),
+    };
+};
+
+type ReduxType = ReturnType<typeof mapDispatcherToProps>;
+
+
+class ProposalsTableComponent extends React.PureComponent<IProposalsTableProps, IProposalsTableState > {
     public render() {
         return (
             <div className="proposals-table">
@@ -65,3 +80,5 @@ export class ProposalsTable extends React.PureComponent<IProposalsTableProps, IP
         );
     }
 }
+
+export const ProposalsTable = connect(null, mapDispatcherToProps)(ProposalsTableComponent)
