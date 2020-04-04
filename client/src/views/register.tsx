@@ -1,4 +1,4 @@
-import { IProps } from "@blueprintjs/core";
+
 import { Button, FormControl, Input, TextField } from "@material-ui/core";
 import * as React from "react";
 import { ConsumerRegisterForm } from "./forms/ConsumerRegisterForm";
@@ -9,7 +9,7 @@ export enum USER_TYPES {
     CONSUMER = "Consumer",
 }
 
-export interface IRegisterViewProps extends IProps {
+export interface IRegisterViewProps {
 
 }
 
