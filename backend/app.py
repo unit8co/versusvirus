@@ -90,8 +90,6 @@ class CustomerRequests(Resource):
         return 'created request for customer'
 
 
->>>>>>> Api - initial version
-
 @provider_api.route('/<int:provider_id>')
 @provider_api.response(404, 'Provider not found')
 @provider_api.param('provider_id', 'The customer identifier')
@@ -157,10 +155,6 @@ class Request(Resource):
         '''Delete request '''
         return 'get request details'
 
-
-@app.route('/')
-def root():
-    return app.send_static_file('index.html')
 
 
 if __name__ == '__main__': 
