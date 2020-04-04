@@ -13,9 +13,12 @@ import {
 } from "react-router-dom";
 import SignIn from "./pages/SignIn";
 import Protected from "./pages/Protected";
+import ProviderRegisterForm from "./views/forms/ProviderRegisterForm";
+import { ProtectedPage } from "./pages/ProtectedPage";
 
 
 function App() {
+  const ProtectedProviderRegisterForm = ProtectedPage(ProviderRegisterForm);
   return (
     <FirebaseAuthProvider firebase={firebase} {...firebaseConfig}>
     <Router>
@@ -32,11 +35,14 @@ function App() {
             <Route path="/sign-in">
               <SignIn />
             </Route>
+            <Route path="/register">
+              <SignIn />
+            </Route>
             <Route path="/register-customer">
               <div>register customer</div>
             </Route>
             <Route path="/register-provider">
-              <div> register provider </div>>
+              <ProtectedProviderRegisterForm />
           </Route>
           </Switch>
         </div>
