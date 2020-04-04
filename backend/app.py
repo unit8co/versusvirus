@@ -5,25 +5,30 @@ from flask_restplus import Api, Resource
 
 import datetime
 
-app = Flask(__name__)
 blueprint = Blueprint('api', __name__, url_prefix='/api/v1')
+
+app = Flask(__name__, static_url_path='', static_folder='../client/build/')
+app.register_blueprint(blueprint)
+CORS(app)
+
+@app.route('/')
+def static_files():
+    return app.send_static_file('index.html')
+
+    
 api = Api(app, 
     version='1.0', 
     title='Covid app API',
+    doc='/swagger/',
     description='An API for the app that matches medical suppliers with hospitals',
     prefix='/api/v1'
 )
-app.register_blueprint(blueprint)
-CORS(app)
 
 customer_api = api.namespace('customers', description='Customer APIs')
 provider_api = api.namespace('providers', description='Provider APIs')
 user_type_api = api.namespace('users-type', description='User Type APIs')
 request_api = api.namespace('requests', description='Request APIs')
 
-# @app.route('/time', methods=['GET']) 
-# def time():
-#     return jsonify({'time': datetime.datetime.now()})
 
 @customer_api.route('/')
 class CustomerList(Resource):
@@ -159,4 +164,3 @@ class Request(Resource):
 
 if __name__ == '__main__': 
     app.run(host='0.0.0.0', port=8080, debug=True, threaded=True) 
-    app.run(host='0.0.0.0', port=8080, debug=True, threaded=True)
