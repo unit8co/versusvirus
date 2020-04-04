@@ -1,5 +1,5 @@
 import { Table, TableBody, TableCell, TableHead, TableRow } from "@material-ui/core";
-import { IClientRequest } from "../../common/types";
+import { IClientRequest } from "../../../common/types";
 import * as React from "react";
 
 export interface IClientRequestDetailsProps {

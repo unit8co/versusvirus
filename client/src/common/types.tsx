@@ -1,3 +1,5 @@
+import { ActionType } from "typesafe-actions";
+import * as actions from "./actions";
 import { MATERIALS } from "./materials";
 
 export interface IClientRequest {
@@ -14,3 +16,5 @@ export interface IProposal {
     proposalQuantity: number;
     reliabilityScore: number;
 }
+
+export type UserActions = ActionType<typeof actions>;

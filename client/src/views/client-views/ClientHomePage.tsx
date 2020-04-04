@@ -2,7 +2,7 @@ import * as React from "react";
 import { ClientRequestDetails } from "./tables/ClientRequestDetails";
 import { ProposalsTable } from "./tables/ProposalsTable";
 import { RequestsPreviewTable } from "./tables/RequestPreviewTable";
-import { IClientRequest, IProposal } from "../common/types";
+import { IClientRequest, IProposal } from "../../common/types";
 
 export interface IClientHomePageProps {
     clientRequests: IClientRequest[];
@@ -10,7 +10,7 @@ export interface IClientHomePageProps {
 }
 
 export interface IClientHomePageState {
-    clientRequests: IClientRequest | undefined;
+    selectedReq: IClientRequest | undefined;
 }
 export class ClientHomePageComponent extends React.PureComponent<IClientHomePageProps> {
 
@@ -24,7 +24,10 @@ export class ClientHomePageComponent extends React.PureComponent<IClientHomePage
                 <div className="left-slider-tab">
                     <div className="client-requests">
                         {this.props.clientRequests.length > 0 ? (
-                            <RequestsPreviewTable clientRequests={this.props.clientRequests}/>
+                            <RequestsPreviewTable
+                                clientRequests={this.props.clientRequests}
+                                changeCurrentRequest={this.updateCurrentRequest}
+                            />
                         ) : (
                             <p>No requests issued yet!</p>
                         )}
@@ -37,5 +40,9 @@ export class ClientHomePageComponent extends React.PureComponent<IClientHomePage
             </div>
             
         );
+    }
+
+    private updateCurrentRequest(newCurrentRequest: IClientRequest) {
+        this.setState({ selecteRequest: newCurrentRequest});
     }
 }

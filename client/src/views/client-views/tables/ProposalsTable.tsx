@@ -1,5 +1,5 @@
 import { Table, TableBody, TableCell, TableHead, TableRow } from "@material-ui/core";
-import { IClientRequest, IProposal } from "../../common/types";
+import { IClientRequest, IProposal } from "../../../common/types";
 import * as React from "react";
 
 export interface IProposalsTableProps {
