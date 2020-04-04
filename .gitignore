@@ -1,0 +1,14 @@
+.vscode/
+.idea
+.project
+.gradle
+.settings
+
+build
+
+node_modules/
+lib/
+**/dist/*
+!**/dist/.gitkeep
+
+.DS_Store
