@@ -1,9 +1,11 @@
 from flask import Flask, Blueprint
 from flask_cors import CORS 
-from flask import jsonify 
+from flask import jsonify  
 from flask_restplus import Api, Resource
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy 
+from flask_restplus import Api, Resource, fields 
 import datetime
+from flask import request
 import sqlalchemy as db 
 from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.orm import mapper, sessionmaker
@@ -14,6 +16,13 @@ from typing import Tuple, Dict
 
 import sqlite3
 from flask import g
+
+def flatten(dict_list):
+    return {k: v for d in dict_list for k, v in d.items()}
+
+def reverse(d):
+    return {v: k for k, v in d.items()}
+
 
 DATABASE = 'db/database.db'
 
@@ -54,7 +63,7 @@ class UserCat(db.Model):
  
 class User(db.Model):
     __tablename__ = "users"
-    user_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer(), primary_key=True)
     user_name = db.Column(db.String(50), nullable=False, unique=True)
     cat_id = db.Column(db.Integer(), db.ForeignKey('user_cat.cat_id'), nullable=False, unique=False)
     mail = db.Column(db.String(128), nullable=False, unique=True)
@@ -118,6 +127,7 @@ class Proposal(db.Model):
     proposal_quantity = db.Column(db.Integer(), nullable=False)
     status_id = db.Column(db.Integer(), db.ForeignKey('proposal_status.status_id'), nullable=False)
 
+
 def loadSession():
     """"""     
     engine = db.engine
@@ -126,16 +136,7 @@ def loadSession():
     metadata = MetaData(engine) 
     Session = sessionmaker(bind=engine)
     session = Session()
-    # print(session.query(UserCat).all())
-    # print(session.query(User).all())
-    # print(session.query(Provider).all())
-    # print(session.query(Client).all())
-    # print(session.query(Product).all())
-    # print(session.query(PlasticQuality).all())
-    # print(session.query(RequestStatus).all())
-    # print(session.query(Request).all())
-    # print(session.query(ProposalStatus).all())
-    # print(session.query(Proposal).all())
+
     return session 
 
 session = loadSession()
@@ -144,7 +145,7 @@ res = session.query(User).all()
 def object_as_dict(obj):
     return {c.key: getattr(obj, c.key)
             for c in inspect(obj).mapper.column_attrs}
-
+ 
 def joined_object_as_dict(obj: Tuple[object], tables_selected_columns: Tuple[Dict[str, str]]):
     res = {}
     for entry_tables, table_columns_mapping in zip(obj, tables_selected_columns):
@@ -152,7 +153,67 @@ def joined_object_as_dict(obj: Tuple[object], tables_selected_columns: Tuple[Dic
             res[result_name] = getattr(entry_tables, column_name)
     
     return res
+ 
+userCategories = [object_as_dict(userCat) for userCat in session.query(UserCat).all()]
+userCategoriesRev = { elt['label'] : elt['cat_id'] for elt in userCategories }
+         
+customer_fields = api.model('Resource', {
+    'username': fields.String,
+    'cat_id': fields.String,
+    'mail': fields.String,
+    'address': fields.String,
+    'is_approved': fields.Boolean
+}) 
 
+client_query_formatter = (
+    # For User table
+    {
+        "user_id": "user_id",
+        "user_name": "username",
+        "mail": "mail",
+        "address": "address",
+    },
+    # For user_cat table
+    {
+        "label": "label"
+    },
+    # For client details table
+    {
+        "is_approved": "is_approved",
+    }
+)
+
+def create_user(payload):
+    user = User(user_name=payload["username"],
+                cat_id=payload["cat_id"],
+                mail=payload["mail"],
+                address=payload["address"])
+    return user
+
+def create_client(payload, user):  
+    new_client = Client(user_id=user.user_id,
+                        is_approved=payload["is_approved"])
+    return new_client
+
+
+def all_clients():
+    query_result = (session.query(User, UserCat, Client)
+                                    .join(UserCat)
+                                    .join(Client)
+                                    .filter(UserCat.label == "CLIENTS") # Making sure it is a client 
+                                    .all())
+    customer = jsonify([joined_object_as_dict(entry, client_query_formatter) for entry in query_result]) 
+    return customer
+
+def get_client(client_id): 
+    query_result = (session.query(User, UserCat, Client)
+                                    .join(UserCat)
+                                    .join(Client)
+                                    .filter(UserCat.label == "CLIENTS") # Making sure it is a client
+                                    .filter(User.user_id == client_id)
+                                    .all())
+    customer = jsonify([joined_object_as_dict(entry, client_query_formatter) for entry in query_result]) 
+    return customer
 
 @customer_api.route('/')
 class CustomerList(Resource):
@@ -160,14 +221,20 @@ class CustomerList(Resource):
     @customer_api.doc('list_customers') 
     def get(self):
         '''Get all customers''' 
-        users = jsonify([object_as_dict(user) for user in session.query(User).all()]) 
-        print(users)
-        return users
+        return all_clients()
 
     @customer_api.doc('create_customer') 
+    @customer_api.expect(customer_fields, validate=False)
+    @api.response(201, 'Customer created succesfully')
     def post(self):
         '''Create a new customer'''
-        return 'created customer'
+        new_user = create_user(request.json)
+        db.session.add(new_user) 
+        # new_client = create_client(request.json, new_user)  
+        # db.session.add(new_client)
+        db.session.commit()  
+        return None, 201
+
 
 
 @provider_api.route('/')
@@ -218,15 +285,15 @@ class ProviderList(Resource):
         return None
 
 
-@customer_api.route('/<int:customer_id>')
+@customer_api.route('/<int:client_id>')
 @customer_api.response(404, 'Customer not found')
-@customer_api.param('customer_id', 'The customer identifier')
+@customer_api.param('client_id', 'The customer identifier')
 class Customer(Resource):
     '''Show a single todo item and lets you delete them'''
     @customer_api.doc('Get customer by id') 
-    def get(self, customer_id):
+    def get(self, client_id):
         '''Get customer'''
-        return 'get customer details' 
+        return get_client(client_id)
 
     @customer_api.doc('Get customer by id') 
     def put(self, customer_id):
@@ -367,7 +434,14 @@ class UserType(Resource):
     @user_type_api.doc('Get user type by id') 
     def get(self, user_id):
         '''Get user type '''
-        return 'get user type'
+        userCategoriesIdLabel = reverse(userCategoriesRev)
+        try: 
+            user_cat = userCategoriesIdLabel[session.query(User).get(user_id).cat_id]
+            return jsonify({'category': user_cat})
+        except:
+            return jsonify({'category': 'unknown'})
+
+        
 
 
 @request_api.route('/<int:request_id>')
