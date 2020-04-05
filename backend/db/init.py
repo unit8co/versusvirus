@@ -29,6 +29,29 @@ conn.execute("""INSERT INTO users(user_id, user_name, cat_id, mail, address)
                     (5, "Hospital B", 2, "contact@hospital_b.com", "44, This Place, 0000 Switzerland CH")           ,
                     (6, "Nurse C",    2, "nurse@mail.com",         "4, This Other Street, 0000 Switzerland CH")     ;""")
 
+# Creating providers detailed table
+conn.execute("""CREATE TABLE providers (user_id INTEGER NOT NULL UNIQUE ,
+                                       use_plastic_id_1 INTEGER NOT NULL,
+                                       use_plastic_id_2 INTEGER NOT NULL,
+                                       use_plastic_id_3 INTEGER NOT NULL,
+                                       use_plastic_id_4 INTEGER NOT NULL,
+                                       FOREIGN KEY (user_id) REFERENCES users (user_id))""")
+conn.execute("""INSERT INTO providers (user_id, use_plastic_id_1, use_plastic_id_2, use_plastic_id_3, use_plastic_id_4)
+                VALUES
+                    (1, 1, 1, 0, 0),
+                    (2, 0, 1, 1, 0),
+                    (3, 0, 1, 0, 1);""")
+
+# Creating clients detailed table
+conn.execute("""CREATE TABLE clients (user_id INTEGER NOT NULL UNIQUE,
+                                      is_approved INTEGER NOT NULL,
+                                      FOREIGN KEY (user_id) REFERENCES users (user_id))""")
+conn.execute("""INSERT INTO clients (user_id, is_approved)
+                VALUES
+                    (4, 1),
+                    (5, 0),
+                    (6, 1);""")
+
 # Populating product table
 conn.execute("""CREATE TABLE products (product_id INTEGER PRIAMRY KEY,
                                        product_name TEXT NOT NULL)""")
