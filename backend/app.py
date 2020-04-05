@@ -65,10 +65,10 @@ class User(db.Model):
 class Provider(db.Model):
     __tablename__ = "providers"
     user_id = db.Column(db.Integer(), db.ForeignKey('users.user_id'), primary_key=True)
-    use_plastic_id_1 = db.Column(db.Boolean(), nullable=False)
-    use_plastic_id_2 = db.Column(db.Boolean(), nullable=False)
-    use_plastic_id_3 = db.Column(db.Boolean(), nullable=False)
-    use_plastic_id_4 = db.Column(db.Boolean(), nullable=False)
+    use_plastic_id_1 = db.Column(db.Integer(), nullable=False)
+    use_plastic_id_2 = db.Column(db.Integer(), nullable=False)
+    use_plastic_id_3 = db.Column(db.Integer(), nullable=False)
+    use_plastic_id_4 = db.Column(db.Integer(), nullable=False)
     proposals = db.relationship('Proposal', backref='providers', lazy=True)
 
 class Client(db.Model):
@@ -84,7 +84,7 @@ class Product(db.Model):
     requests = db.relationship('Request', backref='products', lazy=True)
 
 class PlasticQuality(db.Model):
-    __tablename__ = "plastic_quality"
+    __tablename__ = "plastics_quality"
     plastic_id = db.Column(db.Integer(), primary_key=True)
     plastic_name = db.Column(db.String(256), nullable=False, unique=True)
 
@@ -123,11 +123,19 @@ def loadSession():
     engine = db.engine
     engine.execute('pragma foreign_keys=on')    
     print(engine.table_names())
-    print(User)
     metadata = MetaData(engine) 
     Session = sessionmaker(bind=engine)
     session = Session()
-    print(session.query(Proposal).all())
+    # print(session.query(UserCat).all())
+    # print(session.query(User).all())
+    # print(session.query(Provider).all())
+    # print(session.query(Client).all())
+    # print(session.query(Product).all())
+    # print(session.query(PlasticQuality).all())
+    # print(session.query(RequestStatus).all())
+    # print(session.query(Request).all())
+    # print(session.query(ProposalStatus).all())
+    # print(session.query(Proposal).all())
     return session 
 
 session = loadSession()
@@ -183,14 +191,31 @@ class ProviderList(Resource):
         )
         query_result = (session.query(User, UserCat)
                                         .join(UserCat)
+                                        .filter(UserCat.label == "PROVIDER")
                                         .all())
         providers = jsonify([joined_object_as_dict(entry, query_formatter) for entry in query_result]) 
         return providers
 
     @provider_api.doc('create_providers') 
-    def post(self):
+    def post(self, payload):
         '''Create a new provider'''
-        return 'created providers'
+        # Creating the user entry
+        new_user = User(user_name=payload["username"],
+                        cat_id=payload["cat_id"],
+                        mail=payload["mail"],
+                        address=payload["address"])
+        db.session.add(new_user)
+
+        # Creating the provider detailed entry
+        new_provider = Provider(user_id=new_user.user_id,
+                                use_plastic_id_1=payload["use_plastic_id_1"],
+                                use_plastic_id_2=payload["use_plastic_id_2"],
+                                use_plastic_id_3=payload["use_plastic_id_3"],
+                                use_plastic_id_4=payload["use_plastic_id_4"])
+
+        db.session.add(new_provider)
+        db.session.commit()
+        return None
 
 
 @customer_api.route('/<int:customer_id>')
@@ -233,12 +258,39 @@ class CustomerRequests(Resource):
 @provider_api.route('/<int:provider_id>')
 @provider_api.response(404, 'Provider not found')
 @provider_api.param('provider_id', 'The customer identifier')
-class Provider(Resource):
+class ProviderAPI(Resource):
     '''Show a single todo item and lets you delete them'''
     @provider_api.doc('Get provider by id') 
     def get(self, provider_id):
-        '''Get provider'''
-        return 'get provider details' 
+        '''Get providers by id'''
+        query_formatter = (
+            # For User table
+            {
+                "user_id": "user_id",
+                "user_name": "username",
+                "mail": "mail",
+                "address": "address",
+            },
+            # For user_cat table
+            {
+                "label": "label"
+            },
+            # For provider details table
+            {
+                "use_plastic_id_1": "use_plastic_id_1",
+                "use_plastic_id_2": "use_plastic_id_2",
+                "use_plastic_id_3": "use_plastic_id_3",
+                "use_plastic_id_4": "use_plastic_id_4",
+            }
+        )
+        query_result = (session.query(User, UserCat, Provider)
+                                        .join(UserCat)
+                                        .join(Provider)
+                                        .filter(UserCat.label == "PROVIDER") # Making sure it is a provider
+                                        .filter(User.user_id == provider_id)
+                                        .all())
+        provider = jsonify([joined_object_as_dict(entry, query_formatter) for entry in query_result]) 
+        return provider
 
     @provider_api.doc('Get provider by id') 
     def put(self, provider_id):
