@@ -2,8 +2,6 @@ from flask import Flask, Blueprint
 from flask_cors import CORS 
 from flask import jsonify 
 from flask_restplus import Api, Resource
-from api.models import User as UserModel, to_dict
-from api.config import Config
 import datetime
 import sqlalchemy as db 
 from sqlalchemy import create_engine, MetaData, Table
@@ -16,14 +14,14 @@ from flask import g
 
 DATABASE = 'db/database.db'
 
-def create_app(config):
+def create_app():
     blueprint = Blueprint('api', __name__, url_prefix='/api/v1')
     app = Flask(__name__, static_url_path='', static_folder='../client/build/')
     app.register_blueprint(blueprint)
     CORS(app)
     return app
 
-app = create_app(Config)
+app = create_app()
 
 @app.route('/')
 def static_files():
