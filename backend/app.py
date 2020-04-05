@@ -43,13 +43,49 @@ request_api = api.namespace('requests', description='Request APIs')
 class User(object):
     pass
 
+class UserCat(object):
+    pass
+
+class Providers(object):
+    pass
+
+class Clients(object):
+    pass
+
+class Products(object):
+    pass
+
+class PlasticsQuality(object):
+    pass
+
+class RequestsStatus(object):
+    pass
+
+class Requests(object):
+    pass
+
+class ProposalStatus(object):
+    pass
+
+class Proposals(object):
+    pass
+
 def loadSession():
     """"""     
     engine = create_engine('sqlite:///%s' % DATABASE, echo=True, connect_args={'check_same_thread': False})
     print(engine.table_names())
     metadata = MetaData(engine) 
-    moz_bookmarks = Table('users', metadata, autoload=True)
-    mapper(User, moz_bookmarks)
+    # Loading tables
+    mapper(User, Table('users', metadata, autoload=True))
+    mapper(UserCat, Table('user_cat', metadata, autoload=True))
+    mapper(Providers, Table('providers', metadata, autoload=True))
+    mapper(Clients, Table('clients', metadata, autoload=True))
+    mapper(Products, Table('products', metadata, autoload=True))
+    mapper(PlasticsQuality, Table('plastics_quality', metadata, autoload=True))
+    mapper(RequestsStatus, Table('request_status', metadata, autoload=True))
+    mapper(Requests, Table('requests', metadata, autoload=True))
+    mapper(ProposalStatus, Table('proposal_status', metadata, autoload=True))
+    mapper(Proposals, Table('proposals', metadata, autoload=True))
     
     Session = sessionmaker(bind=engine)
     session = Session()
@@ -83,7 +119,8 @@ class ProviderList(Resource):
     @provider_api.doc('list_providers') 
     def get(self):
         '''Get all providers'''
-        return 'all providers'
+        providers = jsonify([object_as_dict(user) for user in session.query(UserCat).all()]) 
+        return providers
 
     @provider_api.doc('create_providers') 
     def post(self):
