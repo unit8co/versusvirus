@@ -303,23 +303,61 @@ class ProviderAPI(Resource):
         return 'delete customer details'
  
 
-@provider_api.route('/<int:provider_id>/requests')
-@provider_api.response(404, 'Requests for the provider not found')
+@provider_api.route('/<int:provider_id>/proposals')
+@provider_api.response(404, 'Proposals for the provider not found')
 @provider_api.param('provider_id', 'The customer identifier')
-class ProviderRequests(Resource):
-    '''Show a single todo item and lets you delete them'''
+class ProviderProposals(Resource):
+    '''Related to the proposals'''
     @provider_api.doc('Get provider requests by id') 
     def get(self, provider_id):
         '''Get provider requests'''
-        return 'get provider requests'
+        query_formatter = (
+            # For proposal table
+            {
+                "proposal_id": "proposal_id",
+                "request_id": "request_id",
+                "provider_id": "provider_id",
+                "plastic_id": "plastic_id",
+                "proposal_quantity": "proposal_quantity",
+                "status_id": "status_id",
+            },
+            # For Request table
+            {
+                "client_id": "request_client_id",
+                "product_id": "request_product_id",
+                "request_quantity": "requested_quantity",
+            },
+            # For RequestStatus table
+            {
+                "status_label": "request_status",
+            },
+            # For user table
+            {
+                "user_name": "client_name",
+            },
+            # For proposal status table
+            {
+                "status_label": "proposal_status",
+            },
+            # For plastic table
+            {
+                "plastic_name": "proposal_plastic_name",
+            },
+        )
+        query_result = (session.query(Proposal, Request, RequestStatus, User, ProposalStatus, PlasticQuality)
+                                        .join(Request, Proposal.request_id == Request.request_id)
+                                        .join(RequestStatus, Request.status_id == RequestStatus.status_id)
+                                        .join(User, Request.client_id == User.user_id)
+                                        .join(ProposalStatus, Proposal.status_id == ProposalStatus.status_id)
+                                        .join(PlasticQuality, Proposal.plastic_id == PlasticQuality.plastic_id)
+                                        .filter(Proposal.provider_id == provider_id)
+                                        .all())
+        proposals = jsonify([joined_object_as_dict(entry, query_formatter) for entry in query_result]) 
+        return proposals
 
-@provider_api.route('/<int:provider_id>/supplies') 
-@provider_api.param('provider_id', 'The provicer identifier')
-class ProviderSupplies(Resource):
-    @provider_api.doc('Create supply from provider') 
     def put(self, provider_id):
-        '''Create supply from provider'''
-        return 'created supply from provider'
+        '''Create Proposal from provider'''
+        return 'created Proposal from provider'
 
 @user_type_api.route('/<int:user_id>')
 @user_type_api.response(404, 'User not found')
@@ -335,12 +373,36 @@ class UserType(Resource):
 @request_api.route('/<int:request_id>')
 @request_api.response(404, 'Request not found')
 @request_api.param('request_id', 'The request identifier')
-class Request(Resource):
+class RequestAPI(Resource):
     '''Show a request details'''
     @request_api.doc('Get request by id') 
-    def get(self, request_api):
-        '''Get request details'''
-        return 'get request details'
+    def get(self, request_id):
+        '''Get request by id'''
+        query_formatter = (
+            # For Request table
+            {
+                "request_id": "request_id",
+                "product_id": "product_id",
+                "client_id": "client_id",
+                "request_quantity": "request_quantity",
+                "status_id": "status_id",
+            },
+            # For Product table
+            {
+                "product_name": "product_name",
+            },
+            # For User table
+            {
+                "user_name": "client_name"
+            },
+        )
+        query_result = (session.query(Request, Product, User)
+                                        .join(Product, Request.product_id == Product.product_id)
+                                        .join(User, Request.client_id == User.user_id)
+                                        .filter(Request.request_id == request_id)
+                                        .all())
+        request = jsonify(joined_object_as_dict(query_result[0], query_formatter)) 
+        return request
 
     @request_api.doc('Delete request by id') 
     def delete(self, request_api):

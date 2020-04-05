@@ -84,7 +84,7 @@ conn.execute("""INSERT INTO request_status (status_id, status_label)
 # TODO: add timestamps
 conn.execute("""CREATE TABLE requests (request_id INTEGER PRIMARY KEY,
                                        product_id INTEGER NOT NULL,
-                                       client_id INTEGER NOT NULL,
+                                       client_id INTEGER,
                                        request_quantity INTEGER NOT NULL,
                                        status_id INTEGER NOT NULL,
                                        FOREIGN KEY (client_id) REFERENCES clients (user_id),
