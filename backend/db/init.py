@@ -20,7 +20,7 @@ conn.execute("""CREATE TABLE users (user_id INTEGER PRIMARY KEY,
                                     address TEXT NOT NULL, 
                                     FOREIGN KEY (cat_id) REFERENCES user_cat (cat_id))""")
 # Populating user table
-conn.execute("""INSERT INTO users(user_id, user_name, cat_id, mail, address)
+conn.execute("""INSERT INTO users (user_id, user_name, cat_id, mail, address)
                 VALUES
                     (1, "JohnDoe",    1, "johndoe@mail.com",       "3, This Street, 0000 Switzerland CH")           ,
                     (2, "JaneDoe",    1, "janedoe@mail.com",       "4, That Street, 2nd Floor, 0000 Switzerland CH"),
@@ -30,7 +30,7 @@ conn.execute("""INSERT INTO users(user_id, user_name, cat_id, mail, address)
                     (6, "Nurse C",    2, "nurse@mail.com",         "4, This Other Street, 0000 Switzerland CH")     ;""")
 
 # Creating providers detailed table
-conn.execute("""CREATE TABLE providers (user_id INTEGER NOT NULL UNIQUE ,
+conn.execute("""CREATE TABLE providers (user_id INTEGER PRIMARY KEY,
                                        use_plastic_id_1 INTEGER NOT NULL,
                                        use_plastic_id_2 INTEGER NOT NULL,
                                        use_plastic_id_3 INTEGER NOT NULL,
@@ -43,7 +43,7 @@ conn.execute("""INSERT INTO providers (user_id, use_plastic_id_1, use_plastic_id
                     (3, 0, 1, 0, 1);""")
 
 # Creating clients detailed table
-conn.execute("""CREATE TABLE clients (user_id INTEGER NOT NULL UNIQUE,
+conn.execute("""CREATE TABLE clients (user_id INTEGER PRIMARY KEY,
                                       is_approved INTEGER NOT NULL,
                                       FOREIGN KEY (user_id) REFERENCES users (user_id))""")
 conn.execute("""INSERT INTO clients (user_id, is_approved)
@@ -53,7 +53,7 @@ conn.execute("""INSERT INTO clients (user_id, is_approved)
                     (6, 1);""")
 
 # Populating product table
-conn.execute("""CREATE TABLE products (product_id INTEGER PRIAMRY KEY,
+conn.execute("""CREATE TABLE products (product_id INTEGER PRIMARY KEY,
                                        product_name TEXT NOT NULL)""")
 conn.execute("""INSERT INTO products (product_id, product_name)
                 VALUES
@@ -116,7 +116,7 @@ conn.execute("""CREATE TABLE proposals (proposal_id INTEGER PRIMARY KEY,
                                         proposal_quantity INTEGER NOT NULL,
                                         status_id INTEGER NOT NULL,
                                         FOREIGN KEY (request_id) REFERENCES requests (request_id),
-                                        FOREIGN KEY (provider_id) REFERENCES user (user_id),
+                                        FOREIGN KEY (provider_id) REFERENCES users (user_id),
                                         FOREIGN KEY (plastic_id) REFERENCES plastics_quality (plastic_id),
                                         FOREIGN KEY (status_id) REFERENCES proposal_status (status_id))""")
 conn.execute("""INSERT INTO proposals (proposal_id, request_id, provider_id, plastic_id, proposal_quantity, status_id)
