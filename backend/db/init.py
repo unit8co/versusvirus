@@ -1,6 +1,6 @@
 import sqlite3
 
-conn = sqlite3.connect('database.db')
+conn = sqlite3.connect('database.db', isolation_level=None)
 print("Opened database successfully")
 
 # Creating user cat table

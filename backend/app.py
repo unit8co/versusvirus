@@ -2,19 +2,30 @@ from flask import Flask, Blueprint
 from flask_cors import CORS 
 from flask import jsonify 
 from flask_restplus import Api, Resource
-
 import datetime
+import sqlalchemy as db 
+from sqlalchemy import create_engine, MetaData, Table
+from sqlalchemy.orm import mapper, sessionmaker
+from sqlalchemy import inspect
 
-blueprint = Blueprint('api', __name__, url_prefix='/api/v1')
 
-app = Flask(__name__, static_url_path='', static_folder='../client/build/')
-app.register_blueprint(blueprint)
-CORS(app)
+import sqlite3
+from flask import g
+
+DATABASE = 'db/database.db'
+
+def create_app():
+    blueprint = Blueprint('api', __name__, url_prefix='/api/v1')
+    app = Flask(__name__, static_url_path='', static_folder='../client/build/')
+    app.register_blueprint(blueprint)
+    CORS(app)
+    return app
+
+app = create_app()
 
 @app.route('/')
 def static_files():
     return app.send_static_file('index.html')
-
     
 api = Api(app, 
     version='1.0', 
@@ -28,20 +39,42 @@ customer_api = api.namespace('customers', description='Customer APIs')
 provider_api = api.namespace('providers', description='Provider APIs')
 user_type_api = api.namespace('users-type', description='User Type APIs')
 request_api = api.namespace('requests', description='Request APIs')
+ 
+class User(object):
+    pass
 
+def loadSession():
+    """"""     
+    engine = create_engine('sqlite:///%s' % DATABASE, echo=True, connect_args={'check_same_thread': False})
+    print(engine.table_names())
+    metadata = MetaData(engine) 
+    moz_bookmarks = Table('users', metadata, autoload=True)
+    mapper(User, moz_bookmarks)
+    
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    return session 
+
+session = loadSession()
+res = session.query(User).all()
+
+def object_as_dict(obj):
+    return {c.key: getattr(obj, c.key)
+            for c in inspect(obj).mapper.column_attrs}
 
 @customer_api.route('/')
 class CustomerList(Resource):
     '''Shows a list of all todos, and lets you POST to add new tasks'''
     @customer_api.doc('list_customers') 
     def get(self):
-        '''Get all customers'''
-        return 'all customers'
+        '''Get all customers''' 
+        users = jsonify([object_as_dict(user) for user in session.query(User).all()]) 
+        return users
 
     @customer_api.doc('create_customer') 
     def post(self):
         '''Create a new customer'''
-        return 'created customers'
+        return 'created customer'
 
 
 @provider_api.route('/')
