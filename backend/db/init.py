@@ -9,8 +9,8 @@ conn.execute("""CREATE TABLE user_cat (cat_id INTEGER PRIMARY KEY,
 # Populating user cat table
 conn.execute("""INSERT INTO user_cat (cat_id, label)
                 VALUES
-                    (1, "PROVIDERS"),
-                    (2, "CLIENTS")  ;""")
+                    (1, "PROVIDER"),
+                    (2, "CLIENT")  ;""")
 
 # Creating user table
 conn.execute("""CREATE TABLE users (user_id INTEGER PRIMARY KEY,
@@ -87,7 +87,7 @@ conn.execute("""CREATE TABLE requests (request_id INTEGER PRIMARY KEY,
                                        client_id INTEGER NOT NULL,
                                        request_quantity INTEGER NOT NULL,
                                        status_id INTEGER NOT NULL,
-                                       FOREIGN KEY (client_id) REFERENCES users (user_id),
+                                       FOREIGN KEY (client_id) REFERENCES clients (user_id),
                                        FOREIGN KEY (product_id) REFERENCES products (product_id),
                                        FOREIGN KEY (status_id) REFERENCES request_status (status_id))""")
 conn.execute("""INSERT INTO requests (request_id, product_id, client_id, request_quantity, status_id)
@@ -116,7 +116,7 @@ conn.execute("""CREATE TABLE proposals (proposal_id INTEGER PRIMARY KEY,
                                         proposal_quantity INTEGER NOT NULL,
                                         status_id INTEGER NOT NULL,
                                         FOREIGN KEY (request_id) REFERENCES requests (request_id),
-                                        FOREIGN KEY (provider_id) REFERENCES users (user_id),
+                                        FOREIGN KEY (provider_id) REFERENCES providers (user_id),
                                         FOREIGN KEY (plastic_id) REFERENCES plastics_quality (plastic_id),
                                         FOREIGN KEY (status_id) REFERENCES proposal_status (status_id))""")
 conn.execute("""INSERT INTO proposals (proposal_id, request_id, provider_id, plastic_id, proposal_quantity, status_id)

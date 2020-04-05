@@ -2,11 +2,14 @@ from flask import Flask, Blueprint
 from flask_cors import CORS 
 from flask import jsonify 
 from flask_restplus import Api, Resource
+from flask_sqlalchemy import SQLAlchemy
 import datetime
 import sqlalchemy as db 
 from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.orm import mapper, sessionmaker
+from sqlalchemy.interfaces import PoolListener
 from sqlalchemy import inspect
+from typing import Tuple, Dict
 
 
 import sqlite3
@@ -17,11 +20,14 @@ DATABASE = 'db/database.db'
 def create_app():
     blueprint = Blueprint('api', __name__, url_prefix='/api/v1')
     app = Flask(__name__, static_url_path='', static_folder='../client/build/')
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DATABASE}"
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'connect_args': {'check_same_thread': False}}
     app.register_blueprint(blueprint)
     CORS(app)
     return app
 
 app = create_app()
+db = SQLAlchemy(app)
 
 @app.route('/')
 def static_files():
@@ -39,56 +45,89 @@ customer_api = api.namespace('customers', description='Customer APIs')
 provider_api = api.namespace('providers', description='Provider APIs')
 user_type_api = api.namespace('users-type', description='User Type APIs')
 request_api = api.namespace('requests', description='Request APIs')
+
+class UserCat(db.Model):
+    __tablename__ = "user_cat"
+    cat_id = db.Column(db.Integer(), primary_key=True)
+    label = db.Column(db.String(256), nullable=False)
+    users = db.relationship('User', backref='user_cat', lazy=True)
  
-class User(object):
-    pass
+class User(db.Model):
+    __tablename__ = "users"
+    user_id = db.Column(db.Integer, primary_key=True)
+    user_name = db.Column(db.String(50), nullable=False, unique=True)
+    cat_id = db.Column(db.Integer(), db.ForeignKey('user_cat.cat_id'), nullable=False, unique=False)
+    mail = db.Column(db.String(128), nullable=False, unique=True)
+    address = db.Column(db.String(256), nullable=False, unique=False)
+    providers = db.relationship('Provider', uselist=False, backref='users', lazy=True)
+    clients = db.relationship('Client', uselist=False, backref='users', lazy=True)
 
-class UserCat(object):
-    pass
+class Provider(db.Model):
+    __tablename__ = "providers"
+    user_id = db.Column(db.Integer(), db.ForeignKey('users.user_id'), primary_key=True)
+    use_plastic_id_1 = db.Column(db.Boolean(), nullable=False)
+    use_plastic_id_2 = db.Column(db.Boolean(), nullable=False)
+    use_plastic_id_3 = db.Column(db.Boolean(), nullable=False)
+    use_plastic_id_4 = db.Column(db.Boolean(), nullable=False)
+    proposals = db.relationship('Proposal', backref='providers', lazy=True)
 
-class Providers(object):
-    pass
+class Client(db.Model):
+    __tablename__ = "clients"
+    user_id = db.Column(db.Integer(), db.ForeignKey('users.user_id'), primary_key=True)
+    is_approved = db.Column(db.Boolean(), nullable=False)
+    requests = db.relationship('Request', backref='clients', lazy=True)
 
-class Clients(object):
-    pass
+class Product(db.Model):
+    __tablename__ = "products"
+    product_id = db.Column(db.Integer(), primary_key=True)
+    product_name = db.Column(db.String(256),nullable=False, unique=True)
+    requests = db.relationship('Request', backref='products', lazy=True)
 
-class Products(object):
-    pass
+class PlasticQuality(db.Model):
+    __tablename__ = "plastic_quality"
+    plastic_id = db.Column(db.Integer(), primary_key=True)
+    plastic_name = db.Column(db.String(256), nullable=False, unique=True)
 
-class PlasticsQuality(object):
-    pass
+class RequestStatus(db.Model):
+    __tablename__ = "request_status"
+    status_id = db.Column(db.Integer(), primary_key=True)
+    status_label = db.Column(db.String(256), nullable=False, unique=True)
+    requests = db.relationship('Request', backref='request_status', lazy=True)
 
-class RequestsStatus(object):
-    pass
+class Request(db.Model):
+    __tablename__ = "requests"
+    request_id = db.Column(db.Integer(), primary_key=True)
+    product_id = db.Column(db.Integer(), db.ForeignKey('products.product_id'),nullable=False)
+    client_id = db.Column(db.Integer(), db.ForeignKey('clients.user_id'), nullable=False)
+    request_quantity = db.Column(db.Integer(), nullable=False)
+    status_id = db.Column(db.Integer(), db.ForeignKey('request_status.status_id'), nullable=False)
+    proposals = db.relationship('Proposal', backref='requests', lazy=True)
 
-class Requests(object):
-    pass
+class ProposalStatus(db.Model):
+    __tablename__ = "proposal_status"
+    status_id = db.Column(db.Integer(), primary_key=True)
+    status_label = db.Column(db.String(256),nullable=False, unique=True)
+    proposals = db.relationship('Proposal', backref='proposal_status', lazy=True)
 
-class ProposalStatus(object):
-    pass
-
-class Proposals(object):
-    pass
+class Proposal(db.Model):
+    __tablename__ = "proposals"
+    proposal_id = db.Column(db.Integer(), primary_key=True)
+    request_id = db.Column(db.Integer(), db.ForeignKey('requests.request_id'), nullable=False)
+    provider_id = db.Column(db.Integer(), db.ForeignKey('providers.user_id'), nullable=False)
+    plastic_id = db.Column(db.Integer(), db.ForeignKey('plastics_quality.plastic_id'), nullable=False)
+    proposal_quantity = db.Column(db.Integer(), nullable=False)
+    status_id = db.Column(db.Integer(), db.ForeignKey('proposal_status.status_id'), nullable=False)
 
 def loadSession():
     """"""     
-    engine = create_engine('sqlite:///%s' % DATABASE, echo=True, connect_args={'check_same_thread': False})
+    engine = db.engine
+    engine.execute('pragma foreign_keys=on')    
     print(engine.table_names())
+    print(User)
     metadata = MetaData(engine) 
-    # Loading tables
-    mapper(User, Table('users', metadata, autoload=True))
-    mapper(UserCat, Table('user_cat', metadata, autoload=True))
-    mapper(Providers, Table('providers', metadata, autoload=True))
-    mapper(Clients, Table('clients', metadata, autoload=True))
-    mapper(Products, Table('products', metadata, autoload=True))
-    mapper(PlasticsQuality, Table('plastics_quality', metadata, autoload=True))
-    mapper(RequestsStatus, Table('request_status', metadata, autoload=True))
-    mapper(Requests, Table('requests', metadata, autoload=True))
-    mapper(ProposalStatus, Table('proposal_status', metadata, autoload=True))
-    mapper(Proposals, Table('proposals', metadata, autoload=True))
-    
     Session = sessionmaker(bind=engine)
     session = Session()
+    print(session.query(Proposal).all())
     return session 
 
 session = loadSession()
@@ -98,6 +137,15 @@ def object_as_dict(obj):
     return {c.key: getattr(obj, c.key)
             for c in inspect(obj).mapper.column_attrs}
 
+def joined_object_as_dict(obj: Tuple[object], tables_selected_columns: Tuple[Dict[str, str]]):
+    res = {}
+    for entry_tables, table_columns_mapping in zip(obj, tables_selected_columns):
+        for column_name, result_name in table_columns_mapping.items():
+            res[result_name] = getattr(entry_tables, column_name)
+    
+    return res
+
+
 @customer_api.route('/')
 class CustomerList(Resource):
     '''Shows a list of all todos, and lets you POST to add new tasks'''
@@ -105,6 +153,7 @@ class CustomerList(Resource):
     def get(self):
         '''Get all customers''' 
         users = jsonify([object_as_dict(user) for user in session.query(User).all()]) 
+        print(users)
         return users
 
     @customer_api.doc('create_customer') 
@@ -119,7 +168,23 @@ class ProviderList(Resource):
     @provider_api.doc('list_providers') 
     def get(self):
         '''Get all providers'''
-        providers = jsonify([object_as_dict(user) for user in session.query(UserCat).all()]) 
+        query_formatter = (
+            # For User table
+            {
+                "user_id": "user_id",
+                "user_name": "username",
+                "mail": "mail",
+                "address": "address",
+            },
+            # For user_cat table
+            {
+                "label": "label"
+            }
+        )
+        query_result = (session.query(User, UserCat)
+                                        .join(UserCat)
+                                        .all())
+        providers = jsonify([joined_object_as_dict(entry, query_formatter) for entry in query_result]) 
         return providers
 
     @provider_api.doc('create_providers') 
