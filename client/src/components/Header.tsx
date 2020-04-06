@@ -26,7 +26,7 @@ const Header = () => {
       <Toolbar>
         <Typography variant="h6" className={classes.title}>
           Medical Platform
-    </Typography>
+        </Typography>
       </Toolbar>
     </AppBar>
   );

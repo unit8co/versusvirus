@@ -18,18 +18,30 @@ import ProviderRegisterForm from "./views/forms/ProviderRegisterForm";
 import { ProtectedPage } from "./pages/ProtectedPage";
 import ConsumerRegisterForm from "./views/forms/ConsumerRegisterForm";
 import UserHome from "./pages/UserHome";
+import Snackbar from '@material-ui/core/Snackbar';
+import MuiAlert, { AlertProps } from '@material-ui/lab/Alert';
 
 
 function App() {
   const ProtectedProviderRegisterForm = ProtectedPage(ProviderRegisterForm);
   const ProtectedUserHome = ProtectedPage(UserHome);
   const ProtectedConsumerRegisterForm = ProtectedPage(ConsumerRegisterForm);
+
+  const Alert = (props: AlertProps) => {
+    return <MuiAlert elevation={6} variant="filled" {...props} />;
+  }
+  
   return (
     <FirebaseAuthProvider firebase={firebase} {...firebaseConfig}>
     <Router>
       <div className="App">
         <Header />
         <div className="App-body">
+          <Snackbar open={true}>
+              <Alert severity="warning">
+                  The platform still misses some links with DB. We are currently working on getting a MVP product as soon as possible. Stay tuned!
+              </Alert>
+          </Snackbar>
           <Switch>
             <Route exact path="/">
               <Home />
