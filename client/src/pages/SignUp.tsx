@@ -33,10 +33,10 @@ const SignUp = () => {
             </Snackbar>
             <FormControl>
                 <TextField
-                    id="username_input"
+                    id="user_mail_input"
                     value={username}
                     onChange={(e) => setUsername(e.currentTarget.value)}
-                    label="Username"
+                    label="Mail Address"
                     type="required"
                 />
                 <TextField

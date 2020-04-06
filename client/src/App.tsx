@@ -12,6 +12,7 @@ import {
   Route
 } from "react-router-dom";
 import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
 import Protected from "./pages/Protected";
 import ProviderRegisterForm from "./views/forms/ProviderRegisterForm";
 import { ProtectedPage } from "./pages/ProtectedPage";
@@ -38,6 +39,9 @@ function App() {
             </Route>
             <Route path="/sign-in">
               <SignIn />
+            </Route>
+            <Route path="/sign-up">
+              <SignUp />
             </Route>
             <Route path="/register">
               <SignIn />
